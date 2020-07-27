@@ -103,6 +103,16 @@ impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
     }
 }
 
+fn command(program: &str) -> Command {
+    let mut cmd = Command::new(program);
+
+    // need to manually set PATH to make libstd think that the env has
+    // changed in order to trigger the right path search logic
+    // https://github.com/rust-lang/rust/issues/37519
+    cmd.env("PATH", env::var("PATH").expect("PATH to be set"));
+
+    cmd
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // BUILD PIPELINE
@@ -126,7 +136,7 @@ fn build() {
     // EXTRACT
     if !source_path.exists() || !skip_build {
         {
-            let result = std::process::Command::new("cp")
+            let result = command("cp")
                 .arg("-r")
                 .arg(current_dir.join("ffmpeg-src"))
                 .arg(&source_path)
@@ -178,7 +188,8 @@ fn build() {
             }
 
             let eval_configure = |flags: &[&str]| {
-                let mut configure = Command::new("./configure");
+                let mut configure = command("bash");
+                configure.arg("./configure");
 
                 if let Some(path) = &pkg_config_path {
                     configure.env("PKG_CONFIG_PATH", path);
@@ -215,7 +226,7 @@ fn build() {
         // BUILD
         {
             let mut cpu_number = num_cpus::get();
-            let result = std::process::Command::new("make")
+            let result = command("make")
                 .arg("-C")
                 .arg(&source_path)
                 .arg("-f")
