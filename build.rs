@@ -154,6 +154,17 @@ fn build() {
                 "--disable-autodetect",
             ];
 
+            #[cfg(target_family = "windows")]
+            {
+                configure_flags.push("--toolchain=msvc");
+
+                #[cfg(target_arch = "x86_64")]
+                {
+                    configure_flags.push("--target-os=win64");
+                    configure_flags.push("--arch=x86_64");
+                }
+            }
+
             let mut pkg_config_path = env::var_os("PKG_CONFIG_PATH");
 
             if env::var_os("CARGO_FEATURE_GPL").is_some() {
