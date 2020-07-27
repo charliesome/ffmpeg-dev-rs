@@ -39,101 +39,6 @@ fn has_env_var_with_value(s: &str, v: &str) -> bool {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// UTILS - BUILD
-///////////////////////////////////////////////////////////////////////////////
-
-pub fn extract_tar_file<P: AsRef<Path>, Q: AsRef<Path>>(tar_file: P, dest: Q) -> Result<(), String> {
-    let source = std::fs::read(tar_file).expect("read tar file");
-    let tar = GzDecoder::new(&source[..]);
-    let mut archive = Archive::new(tar);
-    // UNPACK ARCHIVE
-    let tmp_source_dir: Option<PathBuf> = {
-        archive
-            .unpack(&dest)
-            .map_err(|x| format!("[{:?}] failed to unpack tar file: {:?}", dest.as_ref(), x))?;
-        let xs = std::fs::read_dir(&dest)
-            .expect(&format!("unable to read dir {:?}", dest.as_ref()))
-            .filter_map(Result::ok)
-            .filter(|file| file.file_type().map(|x| x.is_dir()).unwrap_or(false))
-            .collect::<Vec<std::fs::DirEntry>>();
-        match &xs[..] {
-            [x] => Some(x.path()),
-            _ => None,
-        }
-    };
-    Ok(())
-}
-
-pub fn lookup_newest(paths: Vec<PathBuf>) -> Option<PathBuf> {
-    use std::time::{SystemTime, Duration};
-    let mut newest: Option<(PathBuf, Duration)> = None;
-    paths
-        .clone()
-        .into_iter()
-        .filter_map(|x: PathBuf| {
-            let timestamp = x
-                .metadata()
-                .ok()
-                .and_then(|y| y.created().ok())
-                .and_then(|x| x.duration_since(SystemTime::UNIX_EPOCH).ok());
-            match timestamp {
-                Some(y) => Some((x, y)),
-                _ => None
-            }
-        })
-        .for_each(|(x_path, x_created)| match &newest {
-            None => {
-                newest = Some((x_path, x_created));
-            }
-            Some((_, y_created)) => {
-                if &x_created > y_created {
-                    newest = Some((x_path, x_created));
-                }
-            }
-        });
-    // DONE
-    newest.map(|(x, _)| x)
-}
-
-pub fn files_with_prefix(dir: &PathBuf, pattern: &str) -> Vec<PathBuf> {
-    std::fs::read_dir(dir)
-        .expect(&format!("get dir contents: {:?}", dir))
-        .filter_map(Result::ok)
-        .filter_map(|x| {
-            let file_name = x
-                .file_name()
-                .to_str()?
-                .to_owned();
-            if file_name.starts_with(pattern) {
-                Some(x.path())
-            } else {
-                None
-            }
-        })
-        .collect::<Vec<_>>()
-}
-
-fn run_make(source_path: &PathBuf, makefile: &str) {
-    let result = std::process::Command::new("make")
-        .arg("-C")
-        .arg(source_path)
-        .arg("-f")
-        .arg(makefile)
-        .output()
-        .expect(&format!("make -C {:?} failed", source_path));
-    assert!(result.status.success());
-}
-
-fn cpy<P: AsRef<Path>, Q: AsRef<Path>>(from: P, to: Q) {
-    std::fs::copy(&from, &to)
-        .expect(&format!(
-            "unable to cpy from {:?} to {:?}",
-            from.as_ref(),
-            to.as_ref(),
-        ));
-}
-
-///////////////////////////////////////////////////////////////////////////////
 // PATHS
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -229,7 +134,7 @@ fn build() {
                 .expect("tar decompression of ffmpeg source repo using xz (to fit the 10M crates limit)");
             assert!(result.status.success());
         }
-        assert!(source_path.exists());  
+        assert!(source_path.exists());
     }
     // BUILD CODE PHASE
     if skip_build == false {
@@ -356,7 +261,7 @@ fn build() {
                 .map(|x| x.trim())
                 .all(|x| !x.is_empty())
         );
-        
+
         let gen_file_name = "bindings_ffmpeg.rs";
         let ignored_macros = IgnoreMacros(HashSet::from_iter(vec![
             String::from("FP_INFINITE"),
@@ -419,6 +324,6 @@ fn build() {
 ///////////////////////////////////////////////////////////////////////////////
 
 fn main() {
-    
+
     build();
 }
