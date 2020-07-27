@@ -7,8 +7,6 @@ use std::convert::AsRef;
 use std::path::{PathBuf, Path};
 use std::string::ToString;
 use std::process::Command;
-use tar::Archive;
-use flate2::read::GzDecoder;
 
 
 ///////////////////////////////////////////////////////////////////////////////
