@@ -109,8 +109,9 @@ impl bindgen::callbacks::ParseCallbacks for IgnoreMacros {
 ///////////////////////////////////////////////////////////////////////////////
 
 fn build() {
+    let current_dir = env::current_dir().unwrap();
     let out_path = out_dir();
-    let source_path = out_path.join("FFmpeg-FFmpeg-2722fc2");
+    let source_path = out_path.join("ffmpeg-src");
     // SPEED UP DEV - UNLESS IN RELASE MODE
     let already_built = {
         STATIC_LIBS
@@ -125,13 +126,12 @@ fn build() {
     // EXTRACT
     if !source_path.exists() || !skip_build {
         {
-            let result = std::process::Command::new("tar")
-                .arg("-xJf")
-                .arg("archive/FFmpeg-FFmpeg-2722fc2.tar.xz")
-                .arg("-C")
-                .arg(out_path.to_str().expect("PathBuf to str"))
+            let result = std::process::Command::new("cp")
+                .arg("-r")
+                .arg(current_dir.join("ffmpeg-src"))
+                .arg(&source_path)
                 .output()
-                .expect("tar decompression of ffmpeg source repo using xz (to fit the 10M crates limit)");
+                .expect("copy of ffmpeg src into out dir");
             assert!(result.status.success());
         }
         assert!(source_path.exists());
