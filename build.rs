@@ -164,6 +164,9 @@ fn build() {
                     configure_flags.push("--target-os=win64");
                     configure_flags.push("--arch=x86_64");
                 }
+
+                // needed for random seed in ffmpeg
+                println!("cargo:rustc-link-lib=static=Bcrypt");
             }
 
             let mut pkg_config_path = env::var_os("PKG_CONFIG_PATH");
