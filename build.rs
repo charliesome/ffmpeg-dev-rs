@@ -335,7 +335,6 @@ fn build() {
             source_path.to_str().expect("PathBuf to str")
         })
         .file("cbits/defs.c")
-        .file("cbits/img_utils.c")
         .compile("cbits");
 }
 
