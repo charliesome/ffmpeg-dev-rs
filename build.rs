@@ -174,9 +174,10 @@ fn build() {
             if env::var_os("CARGO_FEATURE_X264").is_some() {
                 configure_flags.push("--enable-libx264");
 
+                let x264_lib_name = env::var_os("DEP_X264_LIB_NAME").unwrap();
                 let x264_libs = env::var_os("DEP_X264_LIBS").unwrap();
                 println!("cargo:rustc-link-search=native={}", x264_libs.to_str().expect("PathBuf to str"));
-                println!("cargo:rustc-link-lib=static=x264");
+                println!("cargo:rustc-link-lib=static={}", x264_lib_name.to_str().unwrap());
 
                 let mut x264_pkg_config = env::var_os("DEP_X264_PKGCONFIG").unwrap();
 
