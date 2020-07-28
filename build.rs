@@ -148,18 +148,19 @@ fn build() {
     if skip_build == false {
         // CONFIGURE
         {
+            let extra_ldflags;
+            let extra_cflags;
+
             let mut configure_flags = vec![
                 "--disable-programs",
                 "--disable-doc",
                 "--disable-autodetect",
             ];
 
-            #[cfg(target_family = "windows")]
-            {
+            if cfg!(target_family = "windows") {
                 configure_flags.push("--toolchain=msvc");
 
-                #[cfg(target_arch = "x86_64")]
-                {
+                if cfg!(target_arch = "x86_64") {
                     configure_flags.push("--target-os=win64");
                     configure_flags.push("--arch=x86_64");
                 }
@@ -174,10 +175,19 @@ fn build() {
             if env::var_os("CARGO_FEATURE_X264").is_some() {
                 configure_flags.push("--enable-libx264");
 
-                let x264_lib_name = env::var_os("DEP_X264_LIB_NAME").unwrap();
-                let x264_libs = env::var_os("DEP_X264_LIBS").unwrap();
-                println!("cargo:rustc-link-search=native={}", x264_libs.to_str().expect("PathBuf to str"));
-                println!("cargo:rustc-link-lib=static={}", x264_lib_name.to_str().unwrap());
+                let x264_lib_name = env::var("DEP_X264_LIB_NAME").unwrap();
+                let x264_libs = env::var("DEP_X264_LIBS").unwrap();
+                let x264_include = env::var("DEP_X264_INCLUDE").unwrap();
+
+                println!("cargo:rustc-link-search=native={}", x264_libs);
+                println!("cargo:rustc-link-lib=static={}", x264_lib_name);
+
+                if cfg!(target_family = "windows") {
+                    extra_ldflags = format!("--extra-ldflags=-LIBPATH:{}", x264_libs);
+                    extra_cflags = format!("--extra-cflags=-I{}", x264_include);
+                    configure_flags.push(&extra_ldflags);
+                    configure_flags.push(&extra_cflags);
+                }
 
                 let mut x264_pkg_config = env::var_os("DEP_X264_PKGCONFIG").unwrap();
 

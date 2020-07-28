@@ -19,7 +19,7 @@ x264 = ["x264-dev"]
 [dependencies]
 libc = "^0.2"
 num_cpus = "1.11.1"
-x264-dev = { git = "https://github.com/charliesome/x264-dev", rev = "696b5c13fb14f1b81d6cf2153d60d877a7f03fc6", optional = true }
+x264-dev = { git = "https://github.com/charliesome/x264-dev", rev = "fe1905a13a00e6a4e0381f97211b514f53ebc032", optional = true }
 
 [build-dependencies]
 bindgen = "0.51"
