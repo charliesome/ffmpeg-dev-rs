@@ -183,8 +183,8 @@ fn build() {
                 println!("cargo:rustc-link-lib=static={}", x264_lib_name);
 
                 if cfg!(target_family = "windows") {
-                    extra_ldflags = format!("--extra-ldflags=-LIBPATH:{}", x264_libs);
-                    extra_cflags = format!("--extra-cflags=-I{}", x264_include);
+                    extra_ldflags = format!("--extra-ldflags=-LIBPATH:{}", x264_libs.replace("\\", "/"));
+                    extra_cflags = format!("--extra-cflags=-I{}", x264_include.replace("\\", "/"));
                     configure_flags.push(&extra_ldflags);
                     configure_flags.push(&extra_cflags);
                 }
