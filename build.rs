@@ -166,7 +166,7 @@ fn build() {
                 }
 
                 // needed for random seed in ffmpeg
-                println!("cargo:rustc-link-lib=static=Bcrypt");
+                println!("cargo:rustc-link-lib=Bcrypt");
             }
 
             let mut pkg_config_path = env::var_os("PKG_CONFIG_PATH");
